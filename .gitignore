@@ -1,0 +1,16 @@
+# MacOS
+.DS_Store
+
+# Node
+node_modules
+yarn.lock
+
+# Foundry
+cache/
+out/
+
+# Secrets
+.env
+
+# Monaco
+logs/
