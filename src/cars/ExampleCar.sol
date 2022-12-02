@@ -15,6 +15,11 @@ contract ExampleCar is Car {
         // If we're not in the lead (index 0) + the car ahead of us is going faster + we can afford a shell, smoke em.
         if (ourCarIndex != 0 && allCars[ourCarIndex - 1].speed > ourCar.speed && ourCar.balance > monaco.getShellCost(1)) {
             monaco.buyShell(1); // This will instantly set the car in front of us' speed to 1.
+        } else {
+            // If we are in the lead and we can afford to shield ourselves, use it.
+            if (ourCarIndex == 0 && ourCar.balance > monaco.getShellCost(1)){
+                monaco.buyShield(1);
+            }
         }
     }
 }

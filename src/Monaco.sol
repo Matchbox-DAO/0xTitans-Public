@@ -19,11 +19,13 @@ contract Monaco {
                                  EVENTS
     //////////////////////////////////////////////////////////////*/
 
-    event TurnCompleted(uint256 indexed turn, CarData[] cars, uint256 acceleratePrice, uint256 shellPrice);
+    event TurnCompleted(uint256 indexed turn, CarData[] cars, uint256 acceleratePrice, uint256 shellPrice, uint256 shieldPrice);
 
     event Shelled(uint256 indexed turn, Car indexed smoker, Car indexed smoked, uint256 amount, uint256 cost);
 
     event Accelerated(uint256 indexed turn, Car indexed car, uint256 amount, uint256 cost);
+
+    event Shielded(uint256 indexed turn, Car indexed car, uint256 amount, uint256 cost);
 
     event Registered(uint256 indexed turn, Car indexed car);
 
@@ -57,6 +59,10 @@ contract Monaco {
     int256 internal constant ACCELERATE_PER_TURN_DECREASE = 0.33e18;
     int256 internal constant ACCELERATE_SELL_PER_TURN = 2e18;
 
+    int256 internal constant SHIELD_TARGET_PRICE = 100e18;
+    int256 internal constant SHIELD_PER_TURN_DECREASE = 0;
+    int256 internal constant SHIELD_SELL_PER_TURN = 0.5e18;
+
     /*//////////////////////////////////////////////////////////////
                                GAME STATE
     //////////////////////////////////////////////////////////////*/
@@ -81,7 +87,8 @@ contract Monaco {
 
     enum ActionType {
         ACCELERATE,
-        SHELL
+        SHELL,
+        SHIELD
     }
 
     mapping(ActionType => uint256) public getActionsSold;
@@ -94,6 +101,7 @@ contract Monaco {
         uint32 balance; // Where 0 means the car has no money.
         uint32 speed; // Where 0 means the car isn't moving.
         uint32 y; // Where 0 means the car hasn't moved.
+        uint32 shield; // Where 0 means the car isn`t shielded.
         Car car;
     }
 
@@ -110,7 +118,7 @@ contract Monaco {
         require(address(getCarData[car].car) == address(0), "DOUBLE_REGISTER");
 
         // Register the caller as a car in the race.
-        getCarData[car] = CarData({balance: STARTING_BALANCE, car: car, speed: 0, y: 0});
+        getCarData[car] = CarData({balance: STARTING_BALANCE, car: car, speed: 0, shield:0, y: 0});
 
         cars.push(car); // Append to the list of cars.
 
@@ -161,6 +169,9 @@ contract Monaco {
                     // Get a pointer to the car's data struct.
                     CarData storage carData = getCarData[car];
 
+                    // Update the shield if it`s active.
+                    if (carData.shield != 0) carData.shield--;
+
                     // If the car is now past the finish line after moving:
                     if ((carData.y += carData.speed) >= FINISH_DISTANCE) {
                         emit Dub(currentTurn, car); // It won.
@@ -190,7 +201,7 @@ contract Monaco {
                 }
 
                 // Note: If we were to deploy this on-chain it this line in particular would be pretty wasteful gas-wise.
-                emit TurnCompleted(turns = uint16(currentTurn + 1), getAllCarData(), getAccelerateCost(1), getShellCost(1));
+                emit TurnCompleted(turns = uint16(currentTurn + 1), getAllCarData(), getAccelerateCost(1), getShellCost(1), getShieldCost(1));
             }
         }
     }
@@ -215,6 +226,25 @@ contract Monaco {
         }
 
         emit Accelerated(turns, Car(msg.sender), amount, cost);
+    }
+
+    function buyShield(uint256 amount) external onlyDuringActiveGame onlyCurrentCar returns (uint256 cost) {
+        cost = getShieldCost(amount); // Get the cost of shield.
+
+        // Get a storage pointer to the calling car's data struct.
+        CarData storage car = getCarData[Car(msg.sender)];
+
+        car.balance -= cost.safeCastTo32(); // This will underflow if we cant afford.
+
+        unchecked {
+            // Increase the shield by the bumped amount, the current turn should not be counted.
+            car.shield += 1 + uint32(amount);
+
+            // Increase the number of accelerates sold.
+            getActionsSold[ActionType.SHIELD] += amount;
+        }
+
+        emit Shielded(turns, Car(msg.sender), amount, cost);
     }
 
     function buyShell(uint256 amount) external onlyDuringActiveGame onlyCurrentCar returns (uint256 cost) {
@@ -255,11 +285,18 @@ contract Monaco {
 
             // If there is a closest car, shell it.
             if (address(closestCar) != address(0)) {
-                // Set the speed to POST_SHELL_SPEED unless its already at that speed or below, as to not speed it up.
-                if (getCarData[closestCar].speed > POST_SHELL_SPEED) getCarData[closestCar].speed = POST_SHELL_SPEED;
+                if (getCarData[closestCar].shield != 0) {
+                    // Reflect the shell onto the caster.
+                    car.speed = POST_SHELL_SPEED;
+                    emit Shelled(turns, Car(msg.sender), Car(msg.sender), amount, cost);
+                } else if (getCarData[closestCar].speed > POST_SHELL_SPEED) {
+                    // Set the speed to POST_SHELL_SPEED unless its already at that speed or below, as to not speed it up.
+                    getCarData[closestCar].speed = POST_SHELL_SPEED;
+                    emit Shelled(turns, Car(msg.sender), closestCar, amount, cost);
+                }
             }
 
-            emit Shelled(turns, Car(msg.sender), closestCar, amount, cost);
+            
         }
     }
 
@@ -276,6 +313,20 @@ contract Monaco {
                     turns,
                     getActionsSold[ActionType.ACCELERATE] + i,
                     ACCELERATE_SELL_PER_TURN
+                );
+            }
+        }
+    }
+
+    function getShieldCost(uint256 amount) public view returns (uint256 sum) {
+        unchecked {
+            for (uint256 i = 0; i < amount; i++) {
+                sum += computeActionPrice(
+                    SHIELD_TARGET_PRICE,
+                    SHIELD_PER_TURN_DECREASE,
+                    turns,
+                    getActionsSold[ActionType.SHIELD] + i,
+                    SHIELD_SELL_PER_TURN
                 );
             }
         }

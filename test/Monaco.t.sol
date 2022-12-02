@@ -23,11 +23,11 @@ contract MonacoTest is Test {
         monaco.register(w3);
 
         // You can throw these CSV logs into Excel/Sheets/Numbers or a similar tool to visualize a race!
-        vm.writeFile(string.concat("logs/", vm.toString(address(w1)), ".csv"), "turns,balance,speed,y\n");
-        vm.writeFile(string.concat("logs/", vm.toString(address(w2)), ".csv"), "turns,balance,speed,y\n");
-        vm.writeFile(string.concat("logs/", vm.toString(address(w3)), ".csv"), "turns,balance,speed,y\n");
-        vm.writeFile("logs/prices.csv", "turns,accelerateCost,shellCost\n");
-        vm.writeFile("logs/sold.csv", "turns,acceleratesBought,shellsBought\n");
+        vm.writeFile(string.concat("logs/", vm.toString(address(w1)), ".csv"), "turns,balance,speed,y,shield\n");
+        vm.writeFile(string.concat("logs/", vm.toString(address(w2)), ".csv"), "turns,balance,speed,y,shield\n");
+        vm.writeFile(string.concat("logs/", vm.toString(address(w3)), ".csv"), "turns,balance,speed,y,shield\n");
+        vm.writeFile("logs/prices.csv", "turns,accelerateCost,shellCost,shieldCost\n");
+        vm.writeFile("logs/sold.csv", "turns,acceleratesBought,shellsBought,shieldsBought\n");
 
         while (monaco.state() != Monaco.State.DONE) {
             monaco.play(1);
@@ -43,6 +43,7 @@ contract MonacoTest is Test {
                 emit log_named_uint("balance", car.balance);
                 emit log_named_uint("speed", car.speed);
                 emit log_named_uint("y", car.y);
+                emit log_named_uint("shield", car.shield);
 
                 vm.writeLine(
                     string.concat("logs/", vm.toString(address(car.car)), ".csv"),
@@ -53,7 +54,9 @@ contract MonacoTest is Test {
                         ",",
                         vm.toString(car.speed),
                         ",",
-                        vm.toString(car.y)
+                        vm.toString(car.y),
+                        ",",
+                        vm.toString(car.shield)
                     )
                 );
 
@@ -64,7 +67,9 @@ contract MonacoTest is Test {
                         ",",
                         vm.toString(monaco.getAccelerateCost(1)),
                         ",",
-                        vm.toString(monaco.getShellCost(1))
+                        vm.toString(monaco.getShellCost(1)),
+                        ",",
+                        vm.toString(monaco.getShieldCost(1))
                     )
                 );
 
@@ -75,7 +80,9 @@ contract MonacoTest is Test {
                         ",",
                         vm.toString(monaco.getActionsSold(Monaco.ActionType.ACCELERATE)),
                         ",",
-                        vm.toString(monaco.getActionsSold(Monaco.ActionType.SHELL))
+                        vm.toString(monaco.getActionsSold(Monaco.ActionType.SHELL)),
+                        ",",
+                        vm.toString(monaco.getActionsSold(Monaco.ActionType.SHIELD))
                     )
                 );
             }
