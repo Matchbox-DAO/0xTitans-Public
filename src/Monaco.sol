@@ -59,6 +59,10 @@ contract Monaco {
     int256 internal constant ACCELERATE_PER_TURN_DECREASE = 0.33e18;
     int256 internal constant ACCELERATE_SELL_PER_TURN = 2e18;
 
+    int256 internal constant SUPER_SHELL_TARGET_PRICE = 300e18;
+    int256 internal constant SUPER_SHELL_PER_TURN_DECREASE = 0.35e18;
+    int256 internal constant SUPER_SHELL_SELL_PER_TURN = 0.2e18;
+
     int256 internal constant SHIELD_TARGET_PRICE = 100e18;
     int256 internal constant SHIELD_PER_TURN_DECREASE = 0;
     int256 internal constant SHIELD_SELL_PER_TURN = 0.5e18;
@@ -88,6 +92,7 @@ contract Monaco {
     enum ActionType {
         ACCELERATE,
         SHELL,
+        SUPER_SHELL,
         SHIELD
     }
 
@@ -228,24 +233,6 @@ contract Monaco {
         emit Accelerated(turns, Car(msg.sender), amount, cost);
     }
 
-    function buyShield(uint256 amount) external onlyDuringActiveGame onlyCurrentCar returns (uint256 cost) {
-        cost = getShieldCost(amount); // Get the cost of shield.
-
-        // Get a storage pointer to the calling car's data struct.
-        CarData storage car = getCarData[Car(msg.sender)];
-
-        car.balance -= cost.safeCastTo32(); // This will underflow if we cant afford.
-
-        unchecked {
-            // Increase the shield by the bumped amount, the current turn should not be counted.
-            car.shield += 1 + uint32(amount);
-
-            // Increase the number of accelerates sold.
-            getActionsSold[ActionType.SHIELD] += amount;
-        }
-
-        emit Shielded(turns, Car(msg.sender), amount, cost);
-    }
 
     function buyShell(uint256 amount) external onlyDuringActiveGame onlyCurrentCar returns (uint256 cost) {
         require(amount != 0, "YOU_CANT_BUY_ZERO_SHELLS"); // Buying zero shells would make them free.
@@ -286,7 +273,7 @@ contract Monaco {
             // If there is a closest car, shell it.
             if (address(closestCar) != address(0)) {
                 if (getCarData[closestCar].shield != 0) {
-                    // Reflect the shell onto the caster.
+                    // Closest car is shielded, reflect the shell onto the caster.
                     car.speed = POST_SHELL_SPEED;
                     emit Shelled(turns, Car(msg.sender), Car(msg.sender), amount, cost);
                 } else if (getCarData[closestCar].speed > POST_SHELL_SPEED) {
@@ -295,9 +282,58 @@ contract Monaco {
                     emit Shelled(turns, Car(msg.sender), closestCar, amount, cost);
                 }
             }
-
-            
         }
+    }
+
+    function buySuperShell(uint256 amount) external onlyDuringActiveGame onlyCurrentCar returns (uint256 cost) {
+        require(amount != 0, "YOU_CANT_BUY_ZERO_SUPER_SHELLS"); // Buying zero super shells would make them free.
+
+        cost = getSuperShellCost(amount); // Get the cost of the shells.
+
+        // Get a storage pointer to the calling car's data struct.
+        CarData storage car = getCarData[Car(msg.sender)];
+
+        car.balance -= cost.safeCastTo32(); // This will underflow if we cant afford.
+
+        uint256 y = car.y; // Retrieve and cache the car's y.
+
+        unchecked {
+            // Increase the number of super shells sold.
+            getActionsSold[ActionType.SUPER_SHELL] += amount;
+
+            for (uint256 i = 0; i < PLAYERS_REQUIRED; i++) {
+                CarData memory nextCar = getCarData[cars[i]];
+
+                // If the car is behind or on us, skip it.
+                if (nextCar.y <= y) continue;
+
+                // Shell the car
+                if (nextCar.speed > POST_SHELL_SPEED) {
+                    // Set the speed to POST_SHELL_SPEED unless its already at that speed or below, as to not speed it up.
+                    getCarData[nextCar.car].speed = POST_SHELL_SPEED;
+                    emit Shelled(turns, Car(msg.sender), nextCar.car, amount, cost);
+                }
+            }
+        }
+    }
+
+    function buyShield(uint256 amount) external onlyDuringActiveGame onlyCurrentCar returns (uint256 cost) {
+        cost = getShieldCost(amount); // Get the cost of shield.
+
+        // Get a storage pointer to the calling car's data struct.
+        CarData storage car = getCarData[Car(msg.sender)];
+
+        car.balance -= cost.safeCastTo32(); // This will underflow if we cant afford.
+
+        unchecked {
+            // Increase the shield by the bumped amount, the current turn should not be counted.
+            car.shield += 1 + uint32(amount);
+
+            // Increase the number of accelerates sold.
+            getActionsSold[ActionType.SHIELD] += amount;
+        }
+
+        emit Shielded(turns, Car(msg.sender), amount, cost);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -318,6 +354,34 @@ contract Monaco {
         }
     }
 
+    function getShellCost(uint256 amount) public view returns (uint256 sum) {
+        unchecked {
+            for (uint256 i = 0; i < amount; i++) {
+                sum += computeActionPrice(
+                    SHELL_TARGET_PRICE,
+                    SHELL_PER_TURN_DECREASE,
+                    turns,
+                    getActionsSold[ActionType.SHELL] + i,
+                    SHELL_SELL_PER_TURN
+                );
+            }
+        }
+    }
+
+    function getSuperShellCost(uint256 amount) public view returns (uint256 sum) {
+        unchecked {
+            for (uint256 i = 0; i < amount; i++) {
+                sum += computeActionPrice(
+                    SUPER_SHELL_TARGET_PRICE,
+                    SUPER_SHELL_PER_TURN_DECREASE,
+                    turns,
+                    getActionsSold[ActionType.SUPER_SHELL] + i,
+                    SUPER_SHELL_SELL_PER_TURN
+                );
+            }
+        }
+    }
+
     function getShieldCost(uint256 amount) public view returns (uint256 sum) {
         unchecked {
             for (uint256 i = 0; i < amount; i++) {
@@ -332,19 +396,6 @@ contract Monaco {
         }
     }
 
-    function getShellCost(uint256 amount) public view returns (uint256 sum) {
-        unchecked {
-            for (uint256 i = 0; i < amount; i++) {
-                sum += computeActionPrice(
-                    SHELL_TARGET_PRICE,
-                    SHELL_PER_TURN_DECREASE,
-                    turns,
-                    getActionsSold[ActionType.SHELL] + i,
-                    SHELL_SELL_PER_TURN
-                );
-            }
-        }
-    }
 
     function computeActionPrice(
         int256 targetPrice,

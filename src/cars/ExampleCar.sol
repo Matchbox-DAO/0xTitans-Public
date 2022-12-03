@@ -12,12 +12,15 @@ contract ExampleCar is Car {
         // If we can afford to accelerate 3 times, let's do it.
         if (ourCar.balance > monaco.getAccelerateCost(3)) ourCar.balance -= uint24(monaco.buyAcceleration(3));
 
-        // If we're not in the lead (index 0) + the car ahead of us is going faster + we can afford a shell, smoke em.
-        if (ourCarIndex != 0 && allCars[ourCarIndex - 1].speed > ourCar.speed && ourCar.balance > monaco.getShellCost(1)) {
+        if(ourCarIndex + 1 == allCars.length && ourCar.balance > monaco.getSuperShellCost(1)){
+            // If we are the last and we can afford it, shell everyone.
+            monaco.buySuperShell(1); // This will instantly every car in front of us' speed to 1.
+        } else if (ourCarIndex != 0 && allCars[ourCarIndex - 1].speed > ourCar.speed && ourCar.balance > monaco.getShellCost(1)) {
+            // If we're not in the lead (index 0) + the car ahead of us is going faster + we can afford a shell, smoke em.
             monaco.buyShell(1); // This will instantly set the car in front of us' speed to 1.
-        } else {
-            // If we are in the lead and we can afford to shield ourselves, use it.
-            if (ourCarIndex == 0 && ourCar.balance > monaco.getShellCost(1)){
+        } else if (ourCar.shield == 0){
+            // If we are in the lead, are not shielded and we can afford to shield ourselves, just do it.
+            if (ourCarIndex == 0 && ourCar.balance > monaco.getShieldCost(1)){
                 monaco.buyShield(1);
             }
         }

@@ -26,8 +26,8 @@ contract MonacoTest is Test {
         vm.writeFile(string.concat("logs/", vm.toString(address(w1)), ".csv"), "turns,balance,speed,y,shield\n");
         vm.writeFile(string.concat("logs/", vm.toString(address(w2)), ".csv"), "turns,balance,speed,y,shield\n");
         vm.writeFile(string.concat("logs/", vm.toString(address(w3)), ".csv"), "turns,balance,speed,y,shield\n");
-        vm.writeFile("logs/prices.csv", "turns,accelerateCost,shellCost,shieldCost\n");
-        vm.writeFile("logs/sold.csv", "turns,acceleratesBought,shellsBought,shieldsBought\n");
+        vm.writeFile("logs/prices.csv", "turns,accelerateCost,shellCost,superShellCost,shieldCost\n");
+        vm.writeFile("logs/sold.csv", "turns,acceleratesBought,shellsBought,superShellBought,shieldsBought\n");
 
         while (monaco.state() != Monaco.State.DONE) {
             monaco.play(1);
@@ -69,6 +69,8 @@ contract MonacoTest is Test {
                         ",",
                         vm.toString(monaco.getShellCost(1)),
                         ",",
+                        vm.toString(monaco.getSuperShellCost(1)),
+                        ",",
                         vm.toString(monaco.getShieldCost(1))
                     )
                 );
@@ -81,6 +83,8 @@ contract MonacoTest is Test {
                         vm.toString(monaco.getActionsSold(Monaco.ActionType.ACCELERATE)),
                         ",",
                         vm.toString(monaco.getActionsSold(Monaco.ActionType.SHELL)),
+                        ",",
+                        vm.toString(monaco.getActionsSold(Monaco.ActionType.SUPER_SHELL)),
                         ",",
                         vm.toString(monaco.getActionsSold(Monaco.ActionType.SHIELD))
                     )
