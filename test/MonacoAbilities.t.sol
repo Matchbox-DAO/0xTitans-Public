@@ -125,6 +125,13 @@ contract MonacoAbilitiesTest is Test {
     }
 
     function testAction_shield_duration() public {
+        uint256 turns = 5;
+        mockCar2.setAction(Monaco.ActionType.SHIELD,turns);
+        for (uint256 i=0; i<turns; ++i){
+            monaco.play(1);
+            (, , , uint32 shield ,) = monaco.getCarData(mockCar2);
+            assertEq(shield, uint32(turns-i));
+        }
     }
 
     function testAction_superShell_ignores_shield() public {
@@ -139,8 +146,8 @@ contract MonacoAbilitiesTest is Test {
         // Simulate one move per car -> 3 turns
         monaco.play(3);
 
-        (, uint32 speed2 , uint32 y2, ,) = monaco.getCarData(mockCar2);
-        (, uint32 speed3 , uint32 y3, ,) = monaco.getCarData(mockCar3);
+        (, uint32 speed2 , , ,) = monaco.getCarData(mockCar2);
+        (, uint32 speed3 , , ,) = monaco.getCarData(mockCar3);
 
         assertEq(speed2, 1);
         assertEq(speed3, 1);

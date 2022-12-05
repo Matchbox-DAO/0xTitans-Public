@@ -34,28 +34,19 @@ contract MockCar is Car {
 
         if(actionType == Monaco.ActionType.ACCELERATE){
             monaco.buyAcceleration(amount);
-            emit Action(address(this),actionType,amount);
-            return;
-        }
-
-        if(actionType == Monaco.ActionType.SHELL){
+        } else  if(actionType == Monaco.ActionType.SHELL){
             monaco.buyShell(amount);
-            return;
-        }
-
-        if(actionType == Monaco.ActionType.SUPER_SHELL){
+        } else  if(actionType == Monaco.ActionType.SUPER_SHELL){
             monaco.buySuperShell(amount);
-            return;
-        }
-
-        if(actionType == Monaco.ActionType.BANANA){
+        } else if(actionType == Monaco.ActionType.BANANA){
             monaco.buyBanana();
-            return;
+        } else if(actionType == Monaco.ActionType.SHIELD){
+            monaco.buyShield(amount);
         }
 
-        if(actionType == Monaco.ActionType.SHIELD){
-            monaco.buyShield(amount);
-            return;
-        }
+        emit Action(address(this),actionType,amount);
+
+        // Mark as idle after we play our move
+        setIdle();
     }
 }
