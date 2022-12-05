@@ -11,5 +11,5 @@ abstract contract Car {
     }
 
     // Note: The allCars array comes sorted in descending order of each car's y position.
-    function takeYourTurn(Monaco.CarData[] calldata allCars, uint256 yourCarIndex) external virtual;
+    function takeYourTurn(Monaco.CarData[] calldata allCars,uint256[] calldata bananas, uint256 yourCarIndex) external virtual;
 }

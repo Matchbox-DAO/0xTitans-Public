@@ -25,7 +25,7 @@ contract MockCar is Car {
         idle = true;
     }
 
-    function takeYourTurn(Monaco.CarData[] calldata /*allCars*/, uint256 /*ourCarIndex*/) external override {
+    function takeYourTurn(Monaco.CarData[] calldata /*allCars*/, uint256[] calldata /*bananas*/, uint256 /*ourCarIndex*/) external override {
         // Do nothing if we`re in idle mode
         if (idle) {
             emit Idle(address(this));

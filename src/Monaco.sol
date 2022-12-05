@@ -174,11 +174,12 @@ contract Monaco {
                 currentCar = currentTurnCar; // Set the current car temporarily.
 
                 // Call the car to have it take its turn with a max of 2 million gas, and catch any errors that occur.
-                try currentTurnCar.takeYourTurn{gas: 2_000_000}(allCarData, yourCarIndex) {} catch {}
+                try currentTurnCar.takeYourTurn{gas: 2_000_000}(allCarData, bananas, yourCarIndex) {} catch {}
 
                 delete currentCar; // Restore the current car to the zero address.
 
                 // Sort the bananas
+                // todo dirty flag, we don`t need to sort every turn
                 bananas = getBananasSortedByY();
 
                 // Loop over all of the cars and update their data.
@@ -315,6 +316,19 @@ contract Monaco {
                 }
             }
 
+            // Check for banana collisions
+            uint256 len = bananas.length;
+            for( uint i = 0; i < len; ++i){
+                if( bananas[i] <= y) continue; // skip bananas that are behind us
+                if( bananas[i] > y + distanceFromClosestCar) break; // we hit the closest car first, we can exit
+                // Remove the banana by swapping it with the last and decreasing the size
+                bananas[i] = bananas[len-1];
+                bananas.pop();
+
+                // Banana was closer or at the same position as the closestCar
+                delete closestCar;
+            }
+
             // If there is a closest car, shell it.
             if (address(closestCar) != address(0)) {
                 if (getCarData[closestCar].shield != 0) {
@@ -357,6 +371,19 @@ contract Monaco {
                     // Set the speed to POST_SHELL_SPEED unless its already at that speed or below, as to not speed it up.
                     getCarData[nextCar.car].speed = POST_SHELL_SPEED;
                     emit Shelled(turns, Car(msg.sender), nextCar.car, amount, cost);
+                }
+            }
+
+            // Check for banana collisions
+            uint256 len = bananas.length;
+            for( uint i = 0; i < len; ++i){
+                  // If the banana is behind or under us, skip it
+                if( bananas[i] <= y) continue;
+                
+                // pop remaining bananas
+                while(i<len){
+                    bananas.pop();
+                    ++i;
                 }
             }
         }

@@ -6,7 +6,7 @@ import "./Car.sol";
 contract ExampleCar is Car {
     constructor(Monaco _monaco) Car(_monaco) {}
 
-    function takeYourTurn(Monaco.CarData[] calldata allCars, uint256 ourCarIndex) external override {
+    function takeYourTurn(Monaco.CarData[] calldata allCars, uint256[] calldata /*bananas*/, uint256 ourCarIndex) external override {
         Monaco.CarData memory ourCar = allCars[ourCarIndex];
 
         // If we can afford to accelerate 3 times, let's do it.
