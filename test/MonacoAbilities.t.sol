@@ -10,10 +10,12 @@ import {MockCar} from "./utils/MockCar.sol";
 
 contract MockMonaco is Monaco{
 
+    // Mock function to set the current state for a car
     function setCarData(Car car, CarData memory data) public {
         getCarData[car] = data;
     }
 
+    // Mock function to add bananas
     function addBanana(uint256 atPosition) public {
         bananas.push(atPosition);
         bananas = getBananasSortedByY();
@@ -273,6 +275,7 @@ contract MonacoAbilitiesTest is Test {
 
 
     function testAction_superShell_bananas() public {
+        // Add a few bananas
         monaco.addBanana(15);
         monaco.addBanana(14);
         monaco.addBanana(13);
@@ -280,9 +283,11 @@ contract MonacoAbilitiesTest is Test {
         monaco.addBanana(11);
         monaco.addBanana(10);
 
+        // Set super shell as the next action for car2
         monaco.setCarData(mockCar2, Monaco.CarData({balance: 15000, car: mockCar2, speed: 100, shield:0, y: 0}));
         mockCar2.setAction(Monaco.ActionType.SUPER_SHELL, 1);
 
+        // Place car1 in front of car2
         monaco.setCarData(mockCar1, Monaco.CarData({balance: 15000, car: mockCar1, speed: 100, shield:0, y: 20}));
         
         monaco.play(1);
@@ -291,7 +296,7 @@ contract MonacoAbilitiesTest is Test {
         vm.expectRevert();
         monaco.bananas(0);
 
-        // Car1 should be unaffected
+        // Car1 is shelled
         (, uint32 car1Speed ,uint32 car1Pos , ,) = monaco.getCarData(mockCar1);
         assertEq(car1Speed,1);
         assertEq(car1Pos,20 + car1Speed);
