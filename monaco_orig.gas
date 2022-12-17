@@ -1,0 +1,31 @@
+No files changed, compilation skipped
+
+Running 1 test for test/Monaco.t.sol:MonacoTest
+[32m[PASS][0m testGames() (gas: 16472233)
+Test result: [32mok[0m. 1 passed; 0 failed; finished in 124.04ms
+| src/Monaco.sol:Monaco contract |                 |       |        |       |         |
+|--------------------------------|-----------------|-------|--------|-------|---------|
+| Deployment Cost                | Deployment Size |       |        |       |         |
+| 1759951                        | 8728            |       |        |       |         |
+| Function Name                  | min             | avg   | median | max   | # calls |
+| buyAcceleration                | 9733            | 10082 | 9733   | 29633 | 57      |
+| buyShell                       | 9065            | 10425 | 9110   | 29035 | 15      |
+| getAccelerateCost              | 2219            | 3150  | 2219   | 7925  | 372     |
+| getActionsSold                 | 554             | 554   | 554    | 554   | 558     |
+| getAllCarData                  | 6405            | 6854  | 6959   | 7236  | 93      |
+| getShellCost                   | 2241            | 2241  | 2241   | 2241  | 316     |
+| play                           | 20210           | 44837 | 44625  | 80944 | 93      |
+| register                       | 47037           | 56017 | 52077  | 68937 | 3       |
+| state                          | 395             | 395   | 395    | 395   | 94      |
+| turns                          | 369             | 369   | 369    | 369   | 838     |
+
+
+| src/cars/ExampleCar.sol:ExampleCar contract |                 |       |        |       |         |
+|---------------------------------------------|-----------------|-------|--------|-------|---------|
+| Deployment Cost                             | Deployment Size |       |        |       |         |
+| 308616                                      | 1731            |       |        |       |         |
+| Function Name                               | min             | avg   | median | max   | # calls |
+| takeYourTurn                                | 7308            | 16783 | 17521  | 49813 | 93      |
+
+
+
