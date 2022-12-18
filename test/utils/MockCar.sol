@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity 0.8.17;
 
-import "../../src/cars/Car.sol";
+import "./../../src/interfaces/ICar.sol";
 
-contract MockCar is Car {
+contract MockCar is ICar {
     event Idle(address);
     event Action(address, Monaco.ActionType, uint256);
 
-    constructor(Monaco _monaco) Car(_monaco) {
+    constructor() {
         idle = true;
     }
 
@@ -25,7 +25,7 @@ contract MockCar is Car {
         idle = true;
     }
 
-    function takeYourTurn(Monaco.CarData[] calldata /*allCars*/, uint256[] calldata /*bananas*/, uint256 /*ourCarIndex*/) external override {
+    function takeYourTurn(Monaco monaco, Monaco.CarData[] calldata /*allCars*/, uint256[] calldata /*bananas*/, uint256 /*ourCarIndex*/) external override {
         // Do nothing if we`re in idle mode
         if (idle) {
             emit Idle(address(this));
@@ -48,5 +48,9 @@ contract MockCar is Car {
 
         // Mark as idle after we play our move
         setIdle();
+    }
+
+    function sayMyName() external pure returns (string memory) {
+        return "MockCar";
     }
 }

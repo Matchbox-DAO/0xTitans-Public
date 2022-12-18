@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity 0.8.17;
 
 import "forge-std/Test.sol";
 
@@ -14,9 +14,9 @@ contract MonacoTest is Test {
     }
 
     function testGames() public {
-        ExampleCar w1 = new ExampleCar(monaco);
-        ExampleCar w2 = new ExampleCar(monaco);
-        ExampleCar w3 = new ExampleCar(monaco);
+        ExampleCar w1 = new ExampleCar();
+        ExampleCar w2 = new ExampleCar();
+        ExampleCar w3 = new ExampleCar();
 
         monaco.register(w1);
         monaco.register(w2);

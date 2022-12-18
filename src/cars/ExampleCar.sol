@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity 0.8.17;
 
-import "./Car.sol";
+import "./../interfaces/ICar.sol";
 
-contract ExampleCar is Car {
-    constructor(Monaco _monaco) Car(_monaco) {}
-
-    function takeYourTurn(Monaco.CarData[] calldata allCars, uint256[] calldata /*bananas*/, uint256 ourCarIndex) external override {
+contract ExampleCar is ICar {
+    function takeYourTurn(Monaco monaco, Monaco.CarData[] calldata allCars, uint256[] calldata /*bananas*/, uint256 ourCarIndex) external override {
         Monaco.CarData memory ourCar = allCars[ourCarIndex];
 
         // If we can afford to accelerate 3 times, let's do it.
@@ -24,5 +22,9 @@ contract ExampleCar is Car {
                 monaco.buyShield(1);
             }
         }
+    }
+
+    function sayMyName() external pure returns (string memory) {
+        return "ExampleCar";
     }
 }
