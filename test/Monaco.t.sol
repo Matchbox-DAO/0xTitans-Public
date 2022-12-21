@@ -6,6 +6,8 @@ import "forge-std/Test.sol";
 import "../src/Monaco.sol";
 import "../src/cars/ExampleCar.sol";
 
+import "../src/cars/samples/ThePackage.sol";
+
 contract MonacoTest is Test {
     Monaco monaco;
 
@@ -16,7 +18,7 @@ contract MonacoTest is Test {
     function testGames() public {
         ExampleCar w1 = new ExampleCar();
         ExampleCar w2 = new ExampleCar();
-        ExampleCar w3 = new ExampleCar();
+        ThePackage w3 = new ThePackage();
 
         monaco.register(w1);
         monaco.register(w2);
