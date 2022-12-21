@@ -19,15 +19,42 @@ contract Monaco {
                                  EVENTS
     //////////////////////////////////////////////////////////////*/
 
-    event TurnCompleted(uint256 indexed turn, CarData[] cars, uint256 acceleratePrice, uint256 shellPrice, uint256 shieldPrice);
+    event TurnCompleted(
+        uint256 indexed turn,
+        CarData[] cars,
+        uint256 acceleratePrice,
+        uint256 shellPrice,
+        uint256 shieldPrice
+    );
 
-    event Shelled(uint256 indexed turn, ICar indexed smoker, ICar indexed smoked, uint256 amount, uint256 cost);
+    event Shelled(
+        uint256 indexed turn,
+        ICar indexed smoker,
+        ICar indexed smoked,
+        uint256 amount,
+        uint256 cost
+    );
 
-    event Accelerated(uint256 indexed turn, ICar indexed car, uint256 amount, uint256 cost);
+    event Accelerated(
+        uint256 indexed turn,
+        ICar indexed car,
+        uint256 amount,
+        uint256 cost
+    );
 
-    event Shielded(uint256 indexed turn, ICar indexed car, uint256 amount, uint256 cost);
+    event Shielded(
+        uint256 indexed turn,
+        ICar indexed car,
+        uint256 amount,
+        uint256 cost
+    );
 
-    event Banana(uint256 indexed turn, ICar indexed car, uint256 cost, uint256 y);
+    event Banana(
+        uint256 indexed turn,
+        ICar indexed car,
+        uint256 cost,
+        uint256 y
+    );
 
     event Registered(uint256 indexed turn, ICar indexed car);
 
@@ -134,7 +161,13 @@ contract Monaco {
         require(address(getCarData[car].car) == address(0), "DOUBLE_REGISTER");
 
         // Register the caller as a car in the race.
-        getCarData[car] = CarData({balance: STARTING_BALANCE, car: car, speed: 0, shield:0, y: 0});
+        getCarData[car] = CarData({
+            balance: STARTING_BALANCE,
+            car: car,
+            speed: 0,
+            shield: 0,
+            y: 0
+        });
 
         cars.push(car); // Append to the list of cars.
 
@@ -169,12 +202,22 @@ contract Monaco {
                 ICar currentTurnCar = allCars[currentTurn % PLAYERS_REQUIRED];
 
                 // Get all car data and the current turn car's index so we can pass it via takeYourTurn.
-                (CarData[] memory allCarData, uint256 yourCarIndex) = getAllCarDataAndFindCar(currentTurnCar);
+                (
+                    CarData[] memory allCarData,
+                    uint256 yourCarIndex
+                ) = getAllCarDataAndFindCar(currentTurnCar);
 
                 currentCar = currentTurnCar; // Set the current car temporarily.
 
                 // Call the car to have it take its turn with a max of 2 million gas, and catch any errors that occur.
-                try currentTurnCar.takeYourTurn{gas: 2_000_000}(this, allCarData, bananas, yourCarIndex) {} catch {}
+                try
+                    currentTurnCar.takeYourTurn{gas: 2_000_000}(
+                        this,
+                        allCarData,
+                        bananas,
+                        yourCarIndex
+                    )
+                {} catch {}
 
                 delete currentCar; // Restore the current car to the zero address.
 
@@ -198,21 +241,26 @@ contract Monaco {
                     uint256 carTargetPosition = carPosition + carData.speed;
 
                     // Check for banana collisions
-                    for(uint256 bananaIdx = 0; bananaIdx<len; ++bananaIdx){
+                    for (uint256 bananaIdx = 0; bananaIdx < len; ++bananaIdx) {
                         uint256 bananaPosition = bananas[bananaIdx];
                         // Skip bananas that are behind the car
-                        if(carPosition >= bananaPosition) continue;
+                        if (carPosition >= bananaPosition) continue;
 
                         // Check if we are passing over a banana
-                        if(carTargetPosition >= bananaPosition){
+                        if (carTargetPosition >= bananaPosition) {
                             // Stop at the banana
                             carTargetPosition = bananaPosition;
 
                             // Apply banana modifier to the speed
-                            carData.speed = uint256(unsafeWadMul(int256(uint256(carData.speed)),BANANA_SPEED_MODIFIER)).safeCastTo32();
+                            carData.speed = uint256(
+                                unsafeWadMul(
+                                    int256(uint256(carData.speed)),
+                                    BANANA_SPEED_MODIFIER
+                                )
+                            ).safeCastTo32();
 
                             // Remove the banana by swapping it with the last and decreasing the size
-                            bananas[bananaIdx] = bananas[len-1];
+                            bananas[bananaIdx] = bananas[len - 1];
                             bananas.pop();
 
                             // Sort the bananas
@@ -224,7 +272,10 @@ contract Monaco {
                     }
 
                     // If the car is now past the finish line after moving:
-                    if ((carData.y = carTargetPosition.safeCastTo32()) >= FINISH_DISTANCE) {
+                    if (
+                        (carData.y = carTargetPosition.safeCastTo32()) >=
+                        FINISH_DISTANCE
+                    ) {
                         emit Dub(currentTurn, car); // It won.
 
                         state = State.DONE;
@@ -238,7 +289,9 @@ contract Monaco {
                     // Knuth shuffle over the cars using our entropy as randomness.
                     for (uint256 j = 0; j < PLAYERS_REQUIRED; ++j) {
                         // Generate a new random number by hashing the old one.
-                        uint256 newEntropy = (entropy = uint72(uint256(keccak256(abi.encode(entropy)))));
+                        uint256 newEntropy = (entropy = uint72(
+                            uint256(keccak256(abi.encode(entropy)))
+                        ));
 
                         // Choose a random position in front of j to swap with..
                         uint256 j2 = j + (newEntropy % (PLAYERS_REQUIRED - j));
@@ -252,7 +305,13 @@ contract Monaco {
                 }
 
                 // Note: If we were to deploy this on-chain it this line in particular would be pretty wasteful gas-wise.
-                emit TurnCompleted(turns = uint16(currentTurn + 1), getAllCarData(), getAccelerateCost(1), getShellCost(1), getShieldCost(1));
+                emit TurnCompleted(
+                    turns = uint16(currentTurn + 1),
+                    getAllCarData(),
+                    getAccelerateCost(1),
+                    getShellCost(1),
+                    getShieldCost(1)
+                );
             }
         }
     }
@@ -261,7 +320,9 @@ contract Monaco {
                                  ACTIONS
     //////////////////////////////////////////////////////////////*/
 
-    function buyAcceleration(uint256 amount) external onlyDuringActiveGame onlyCurrentCar returns (uint256 cost) {
+    function buyAcceleration(
+        uint256 amount
+    ) external onlyDuringActiveGame onlyCurrentCar returns (uint256 cost) {
         cost = getAccelerateCost(amount); // Get the cost of the acceleration.
 
         // Get a storage pointer to the calling car's data struct.
@@ -279,8 +340,9 @@ contract Monaco {
         emit Accelerated(turns, ICar(msg.sender), amount, cost);
     }
 
-
-    function buyShell(uint256 amount) external onlyDuringActiveGame onlyCurrentCar returns (uint256 cost) {
+    function buyShell(
+        uint256 amount
+    ) external onlyDuringActiveGame onlyCurrentCar returns (uint256 cost) {
         require(amount != 0, "YOU_CANT_BUY_ZERO_SHELLS"); // Buying zero shells would make them free.
 
         cost = getShellCost(amount); // Get the cost of the shells.
@@ -318,11 +380,11 @@ contract Monaco {
 
             // Check for banana collisions
             uint256 len = bananas.length;
-            for( uint i = 0; i < len; ++i){
-                if( bananas[i] <= y) continue; // skip bananas that are behind us
-                if( bananas[i] > y + distanceFromClosestCar) break; // we hit the closest car first, we can exit
+            for (uint i = 0; i < len; ++i) {
+                if (bananas[i] <= y) continue; // skip bananas that are behind us
+                if (bananas[i] > y + distanceFromClosestCar) break; // we hit the closest car first, we can exit
                 // Remove the banana by swapping it with the last and decreasing the size
-                bananas[i] = bananas[len-1];
+                bananas[i] = bananas[len - 1];
                 bananas.pop();
 
                 // Banana was closer or at the same position as the closestCar
@@ -334,17 +396,31 @@ contract Monaco {
                 if (getCarData[closestCar].shield != 0) {
                     // Closest car is shielded, reflect the shell onto the caster.
                     car.speed = POST_SHELL_SPEED;
-                    emit Shelled(turns, ICar(msg.sender), ICar(msg.sender), amount, cost);
+                    emit Shelled(
+                        turns,
+                        ICar(msg.sender),
+                        ICar(msg.sender),
+                        amount,
+                        cost
+                    );
                 } else if (getCarData[closestCar].speed > POST_SHELL_SPEED) {
                     // Set the speed to POST_SHELL_SPEED unless its already at that speed or below, as to not speed it up.
                     getCarData[closestCar].speed = POST_SHELL_SPEED;
-                    emit Shelled(turns, ICar(msg.sender), closestCar, amount, cost);
+                    emit Shelled(
+                        turns,
+                        ICar(msg.sender),
+                        closestCar,
+                        amount,
+                        cost
+                    );
                 }
             }
         }
     }
 
-    function buySuperShell(uint256 amount) external onlyDuringActiveGame onlyCurrentCar returns (uint256 cost) {
+    function buySuperShell(
+        uint256 amount
+    ) external onlyDuringActiveGame onlyCurrentCar returns (uint256 cost) {
         require(amount != 0, "YOU_CANT_BUY_ZERO_SUPER_SHELLS"); // Buying zero super shells would make them free.
 
         cost = getSuperShellCost(amount); // Get the cost of the shells.
@@ -370,18 +446,24 @@ contract Monaco {
                 if (nextCar.speed > POST_SHELL_SPEED) {
                     // Set the speed to POST_SHELL_SPEED unless its already at that speed or below, as to not speed it up.
                     getCarData[nextCar.car].speed = POST_SHELL_SPEED;
-                    emit Shelled(turns, ICar(msg.sender), nextCar.car, amount, cost);
+                    emit Shelled(
+                        turns,
+                        ICar(msg.sender),
+                        nextCar.car,
+                        amount,
+                        cost
+                    );
                 }
             }
 
             // Check for banana collisions
             uint256 len = bananas.length;
-            for( uint i = 0; i < len; ++i){
-                  // If the banana is behind or under us, skip it
-                if( bananas[i] <= y) continue;
-                
+            for (uint i = 0; i < len; ++i) {
+                // If the banana is behind or under us, skip it
+                if (bananas[i] <= y) continue;
+
                 // pop remaining bananas
-                while(i<len){
+                while (i < len) {
                     bananas.pop();
                     ++i;
                 }
@@ -389,7 +471,12 @@ contract Monaco {
         }
     }
 
-    function buyBanana() external onlyDuringActiveGame onlyCurrentCar returns (uint256 cost) {
+    function buyBanana()
+        external
+        onlyDuringActiveGame
+        onlyCurrentCar
+        returns (uint256 cost)
+    {
         cost = getBananaCost(); // Get the cost of a banana.
 
         // Get a storage pointer to the calling car's data struct.
@@ -404,13 +491,15 @@ contract Monaco {
             bananas.push(y);
 
             // Increase the number of bananas sold.
-            getActionsSold[ActionType.BANANA] ++;
+            getActionsSold[ActionType.BANANA]++;
         }
 
         emit Banana(turns, ICar(msg.sender), cost, y);
     }
 
-    function buyShield(uint256 amount) external onlyDuringActiveGame onlyCurrentCar returns (uint256 cost) {
+    function buyShield(
+        uint256 amount
+    ) external onlyDuringActiveGame onlyCurrentCar returns (uint256 cost) {
         cost = getShieldCost(amount); // Get the cost of shield.
 
         // Get a storage pointer to the calling car's data struct.
@@ -433,7 +522,9 @@ contract Monaco {
                              ACTION PRICING
     //////////////////////////////////////////////////////////////*/
 
-    function getAccelerateCost(uint256 amount) public view returns (uint256 sum) {
+    function getAccelerateCost(
+        uint256 amount
+    ) public view returns (uint256 sum) {
         unchecked {
             for (uint256 i = 0; i < amount; i++) {
                 sum += computeActionPrice(
@@ -461,7 +552,9 @@ contract Monaco {
         }
     }
 
-    function getSuperShellCost(uint256 amount) public view returns (uint256 sum) {
+    function getSuperShellCost(
+        uint256 amount
+    ) public view returns (uint256 sum) {
         unchecked {
             for (uint256 i = 0; i < amount; i++) {
                 sum += computeActionPrice(
@@ -485,7 +578,7 @@ contract Monaco {
                 BANANA_SELL_PER_TURN
             );
         }
-    } 
+    }
 
     function getShieldCost(uint256 amount) public view returns (uint256 sum) {
         unchecked {
@@ -500,7 +593,6 @@ contract Monaco {
             }
         }
     }
-
 
     function computeActionPrice(
         int256 targetPrice,
@@ -546,11 +638,14 @@ contract Monaco {
 
         unchecked {
             // Copy over each car's data into the results array.
-            for (uint256 i = 0; i < PLAYERS_REQUIRED; i++) results[i] = getCarData[sortedCars[i]];
+            for (uint256 i = 0; i < PLAYERS_REQUIRED; i++)
+                results[i] = getCarData[sortedCars[i]];
         }
     }
 
-    function getAllCarDataAndFindCar(ICar carToFind) public view returns (CarData[] memory results, uint256 foundCarIndex) {
+    function getAllCarDataAndFindCar(
+        ICar carToFind
+    ) public view returns (CarData[] memory results, uint256 foundCarIndex) {
         results = new CarData[](PLAYERS_REQUIRED); // Allocate the array.
 
         // Get a list of cars sorted descendingly by y.
@@ -573,7 +668,11 @@ contract Monaco {
                               SORTING LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function getBananasSortedByY() internal view returns (uint256[] memory sortedBananas) {
+    function getBananasSortedByY()
+        internal
+        view
+        returns (uint256[] memory sortedBananas)
+    {
         unchecked {
             sortedBananas = bananas; // Init sortedBananas.
             uint256 len = sortedBananas.length;
@@ -593,7 +692,11 @@ contract Monaco {
         }
     }
 
-    function getCarsSortedByY() internal view returns (ICar[] memory sortedCars) {
+    function getCarsSortedByY()
+        internal
+        view
+        returns (ICar[] memory sortedCars)
+    {
         unchecked {
             sortedCars = cars; // Initialize sortedCars.
 
@@ -601,7 +704,10 @@ contract Monaco {
             for (uint256 i = 0; i < PLAYERS_REQUIRED; i++) {
                 for (uint256 j = i + 1; j < PLAYERS_REQUIRED; j++) {
                     // Sort cars descendingly by their y position.
-                    if (getCarData[sortedCars[j]].y > getCarData[sortedCars[i]].y) {
+                    if (
+                        getCarData[sortedCars[j]].y >
+                        getCarData[sortedCars[i]].y
+                    ) {
                         ICar temp = sortedCars[i];
                         sortedCars[i] = sortedCars[j];
                         sortedCars[j] = temp;

@@ -230,7 +230,7 @@ contract ThePackage is ICar {
             ourCarIndex,
             eco
         );
-        
+
         boostCounter += _boost;
         toShell = toShell || _toShell;
 

@@ -78,12 +78,12 @@ function wadExp(int256 x) pure returns (int256 r) {
         // x is now in the range (-42, 136) * 1e18. Convert to (-42, 136) * 2**96
         // for more intermediate precision and a binary basis. This base conversion
         // is a multiplication by 1e18 / 2**96 = 5**18 / 2**78.
-        x = (x << 78) / 5**18;
+        x = (x << 78) / 5 ** 18;
 
         // Reduce range of x to (-½ ln 2, ½ ln 2) * 2**96 by factoring out powers
         // of two such that exp(x) = exp(x') * 2**k, where k is an integer.
         // Solving this gives k = round(x / log(2)) and x' = x - k * log(2).
-        int256 k = ((x << 96) / 54916777467707473351141471128 + 2**95) >> 96;
+        int256 k = ((x << 96) / 54916777467707473351141471128 + 2 ** 95) >> 96;
         x = x - k * 54916777467707473351141471128;
 
         // k is in the range [-61, 195].
@@ -119,7 +119,10 @@ function wadExp(int256 x) pure returns (int256 r) {
         // * the 1e18 / 2**96 factor for base conversion.
         // We do this all at once, with an intermediate result in 2**213
         // basis, so the final right shift is always by a positive amount.
-        r = int256((uint256(r) * 3822833074963236453042738258902158003155416615667) >> uint256(195 - k));
+        r = int256(
+            (uint256(r) * 3822833074963236453042738258902158003155416615667) >>
+                uint256(195 - k)
+        );
     }
 }
 
@@ -186,7 +189,9 @@ function wadLn(int256 x) pure returns (int256 r) {
         // mul s * 5e18 * 2**96, base is now 5**18 * 2**192
         r *= 1677202110996718588342820967067443963516166;
         // add ln(2) * k * 5e18 * 2**192
-        r += 16597577552685614221487285958193947469193820559219878177908093499208371 * k;
+        r +=
+            16597577552685614221487285958193947469193820559219878177908093499208371 *
+            k;
         // add ln(2**96 / 10**18) * 5e18 * 2**192
         r += 600920179829731861736702779321621459595472258049074101567377883020018308;
         // base conversion: mul 2**18 / 2**192
