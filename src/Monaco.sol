@@ -653,6 +653,10 @@ contract Monaco {
         }
     }
 
+    function getAllBananas() public view returns (uint256[] memory bananas_) {
+        bananas_ = bananas;
+    }
+
     function getAllCarDataAndFindCar(
         ICar carToFind
     ) public view returns (CarData[] memory results, uint256 foundCarIndex) {
