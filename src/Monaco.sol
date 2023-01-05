@@ -16,6 +16,12 @@ contract Monaco {
     using SafeCastLib for uint256;
 
     /*//////////////////////////////////////////////////////////////
+                                 ERRORS
+    //////////////////////////////////////////////////////////////*/
+
+    error Monaco__nonReentrant();
+
+    /*//////////////////////////////////////////////////////////////
                                  EVENTS
     //////////////////////////////////////////////////////////////*/
 
@@ -78,6 +84,10 @@ contract Monaco {
 
     int256 internal constant BANANA_SPEED_MODIFIER = 0.5e18;
 
+    // Reentrancy constants
+    uint256 internal constant _NOT_ENTERED = 1;
+    uint256 internal constant _ENTERED = 2;
+
     /*//////////////////////////////////////////////////////////////
                             PRICING CONSTANTS
     //////////////////////////////////////////////////////////////*/
@@ -121,6 +131,8 @@ contract Monaco {
     ICar public currentCar; // The car currently making a move.
 
     uint256[] public bananas; // The bananas in play, tracked by their y position.
+
+    uint256 private _reentrantGuard = _NOT_ENTERED; // Reentrancy guard flag
 
     /*//////////////////////////////////////////////////////////////
                                SALES STATE
@@ -190,7 +202,9 @@ contract Monaco {
                                 CORE GAME
     //////////////////////////////////////////////////////////////*/
 
-    function play(uint256 turnsToPlay) external onlyDuringActiveGame {
+    function play(
+        uint256 turnsToPlay
+    ) external onlyDuringActiveGame nonReentrant {
         unchecked {
             // We'll play turnsToPlay turns, or until the game is done.
             for (; turnsToPlay != 0; turnsToPlay--) {
@@ -282,26 +296,6 @@ contract Monaco {
 
                         return; // Exit early.
                     }
-                }
-
-                // If this is the last turn in the batch:
-                if (currentTurn % PLAYERS_REQUIRED == 0) {
-                    // Knuth shuffle over the cars using our entropy as randomness.
-                    for (uint256 j = 0; j < PLAYERS_REQUIRED; ++j) {
-                        // Generate a new random number by hashing the old one.
-                        uint256 newEntropy = (entropy = uint72(
-                            uint256(keccak256(abi.encode(entropy)))
-                        ));
-
-                        // Choose a random position in front of j to swap with..
-                        uint256 j2 = j + (newEntropy % (PLAYERS_REQUIRED - j));
-
-                        ICar temp = allCars[j];
-                        allCars[j] = allCars[j2];
-                        allCars[j2] = temp;
-                    }
-
-                    cars = allCars; // Reorder cars using the new shuffled ones.
                 }
 
                 // Note: If we were to deploy this on-chain it this line in particular would be pretty wasteful gas-wise.
@@ -628,6 +622,22 @@ contract Monaco {
         require(ICar(msg.sender) == currentCar, "NOT_CURRENT_CAR");
 
         _;
+    }
+
+    modifier nonReentrant() {
+        // Check if the guard is set
+        if (_reentrantGuard != _NOT_ENTERED) {
+            revert Monaco__nonReentrant();
+        }
+
+        // Set the guard
+        _reentrantGuard = _ENTERED;
+
+        // Allow execution
+        _;
+
+        // Reset the guard
+        _reentrantGuard = _NOT_ENTERED;
     }
 
     function getAllCarData() public view returns (CarData[] memory results) {

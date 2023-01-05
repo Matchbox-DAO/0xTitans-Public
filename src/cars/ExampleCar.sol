@@ -20,7 +20,7 @@ contract ExampleCar is ICar {
             ourCar.balance > monaco.getSuperShellCost(1)
         ) {
             // If we are the last and we can afford it, shell everyone.
-            monaco.buySuperShell(1); // This will instantly every car in front of us' speed to 1.
+            monaco.buySuperShell(1); // This will instantly set every car in front of us' speed to 1.
         } else if (
             ourCarIndex != 0 &&
             allCars[ourCarIndex - 1].speed > ourCar.speed &&
@@ -30,8 +30,8 @@ contract ExampleCar is ICar {
             monaco.buyShell(1); // This will instantly set the car in front of us' speed to 1.
         } else if (ourCar.shield == 0) {
             // If we are in the lead, are not shielded and we can afford to shield ourselves, just do it.
-            if (ourCarIndex == 0 && ourCar.balance > monaco.getShieldCost(1)) {
-                monaco.buyShield(1);
+            if (ourCarIndex == 0 && ourCar.balance > monaco.getShieldCost(2)) {
+                monaco.buyShield(2);
             }
         }
     }

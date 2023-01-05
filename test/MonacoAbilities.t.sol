@@ -8,6 +8,23 @@ import {ICar} from "../src/interfaces/ICar.sol";
 import "../src/cars/ExampleCar.sol";
 import {MockCar} from "./utils/MockCar.sol";
 
+contract CarReenter is ICar {
+    bool public success = false;
+    function takeYourTurn(
+        Monaco monaco,
+        Monaco.CarData[] calldata /*allCars*/,
+        uint256[] calldata /*bananas*/,
+        uint256 /*ourCarIndex*/
+    ) external override {
+        success = true;
+        monaco.play(1);
+    }
+
+    function sayMyName() external pure returns (string memory) {
+        return "CarReenter";
+    }
+}
+
 contract MockMonaco is Monaco {
     // Mock function to set the current state for a car
     function setCarData(ICar car, CarData memory data) public {
@@ -38,6 +55,20 @@ contract MonacoAbilitiesTest is Test {
         monaco.register(mockCar1);
         monaco.register(mockCar2);
         monaco.register(mockCar3);
+    }
+
+    function test_nonReentrancy() public {
+        MockMonaco monacoReentrancy = new MockMonaco();
+
+        monacoReentrancy.register(new MockCar());
+        // set the first car to act as the reentrancy car
+        CarReenter car = new CarReenter();
+        monacoReentrancy.register(car);
+        monacoReentrancy.register(new MockCar());
+        
+        monacoReentrancy.play(1);
+        // the success flag is true if reentrancy succeeds
+        assertTrue(car.success() == false);
     }
 
     function test_storageOverwrite(
