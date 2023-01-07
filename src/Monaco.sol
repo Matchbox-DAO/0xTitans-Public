@@ -108,9 +108,9 @@ contract Monaco {
     int256 internal constant BANANA_PER_TURN_DECREASE = 0.33e18;
     int256 internal constant BANANA_SELL_PER_TURN = 0.2e18;
 
-    int256 internal constant SHIELD_TARGET_PRICE = 100e18;
-    int256 internal constant SHIELD_PER_TURN_DECREASE = 0;
-    int256 internal constant SHIELD_SELL_PER_TURN = 0.5e18;
+    int256 internal constant SHIELD_TARGET_PRICE = 300e18;
+    int256 internal constant SHIELD_PER_TURN_DECREASE = 0.33e18;
+    int256 internal constant SHIELD_SELL_PER_TURN = 0.2e18;
 
     /*//////////////////////////////////////////////////////////////
                                GAME STATE
@@ -247,7 +247,7 @@ contract Monaco {
                     CarData storage carData = getCarData[car];
 
                     // Update the shield if it`s active.
-                    if (carData.shield != 0) carData.shield--;
+                    if (carData.shield > 0) carData.shield--;
 
                     // Cache storage data
                     uint256 len = bananas.length;
@@ -387,17 +387,7 @@ contract Monaco {
 
             // If there is a closest car, shell it.
             if (address(closestCar) != address(0)) {
-                if (getCarData[closestCar].shield != 0) {
-                    // Closest car is shielded, reflect the shell onto the caster.
-                    car.speed = POST_SHELL_SPEED;
-                    emit Shelled(
-                        turns,
-                        ICar(msg.sender),
-                        ICar(msg.sender),
-                        amount,
-                        cost
-                    );
-                } else if (getCarData[closestCar].speed > POST_SHELL_SPEED) {
+                if (getCarData[closestCar].shield == 0 && getCarData[closestCar].speed > POST_SHELL_SPEED) {
                     // Set the speed to POST_SHELL_SPEED unless its already at that speed or below, as to not speed it up.
                     getCarData[closestCar].speed = POST_SHELL_SPEED;
                     emit Shelled(

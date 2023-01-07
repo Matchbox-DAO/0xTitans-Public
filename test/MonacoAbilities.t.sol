@@ -147,6 +147,11 @@ contract MonacoAbilitiesTest is Test {
     }
 
     function testAction_shield() public {
+        // if you try to purchase 3 shield at the start of the race, your balance will overflow
+        // simulate a few turns of the race such that the price of 3 shields has sufficiently decayed
+        // 18 turns (multiple of 3) such that each racer gone 6 times
+        monaco.play(18);
+
         // Position the first car ahead
         uint32 car2Start = 200;
         uint32 car2Speed = 100;
@@ -183,15 +188,18 @@ contract MonacoAbilitiesTest is Test {
         (, uint32 speed2, uint32 y2, , ) = monaco.getCarData(mockCar2);
 
         // car 2 is shielded and ahead
-        // car 1 launches shell
-        assertEq(speed1, 1);
-        assertEq(y1, car1Start + 201); // 2 turns at full speed, 1 with reduced
+        assertEq(y1, car1Start + 300); // 3 turns at full speed (is not penalized)
         assertEq(speed2, car2Speed);
         assertEq(y2, car2Start + 300); // 3 turns at full speed
     }
 
     function testAction_shield_duration() public {
-        uint256 turns = 5;
+        // if you try to purchase 3 shield at the start of the race, your balance will overflow
+        // simulate a few turns of the race such that the price of 3 shields has sufficiently decayed
+        // 18 turns (multiple of 3) such that each racer gone 6 times
+        monaco.play(18);
+
+        uint256 turns = 3;
         mockCar2.setAction(Monaco.ActionType.SHIELD, turns);
         for (uint256 i = 0; i < turns; ++i) {
             monaco.play(1);

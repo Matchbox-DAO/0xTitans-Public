@@ -8,6 +8,12 @@ import "../src/cars/ExampleCar.sol";
 
 import "../src/cars/samples/ThePackage.sol";
 
+import {c000r} from "../src/cars/samples/c000r.sol";
+import {PermaShield} from "../src/cars/samples/PermaShield.sol";
+import {Sauce} from "../src/cars/samples/Saucepoint.sol";
+import {MadCar} from "../src/cars/samples/MadCar.sol";
+import {Floor} from "../src/cars/samples/Floor.sol";
+
 uint256 constant CAR_LEN = 3;
 uint256 constant ABILITY_LEN = 5;
 
@@ -42,9 +48,9 @@ contract MonacoTest is Test {
     }
 
     function testGames() public {
-        ExampleCar w1 = new ExampleCar();
-        ExampleCar w2 = new ExampleCar();
-        ThePackage w3 = new ThePackage();
+        ICar w1 = new PermaShield();
+        ICar w2 = new Sauce();
+        ICar w3 = new Floor();
 
         monaco.register(w1);
         monaco.register(w2);
@@ -179,6 +185,10 @@ contract MonacoTest is Test {
             "]}"
         );
         emit log_named_uint("Number Of Turns", monaco.turns());
+        emit log_named_address("\nWinner", address(monaco.getAllCarData()[0].car));
+        emit log_named_address("\tCar 1:", address(w1));
+        emit log_named_address("\tCar 2:", address(w2));
+        emit log_named_address("\tCar 3:", address(w3));
     }
 
 
