@@ -78,7 +78,7 @@ contract Monaco {
 
     uint32 internal constant POST_SHELL_SPEED = 1;
 
-    uint32 internal constant STARTING_BALANCE = 15000;
+    uint32 internal constant STARTING_BALANCE = 17500;
 
     uint256 internal constant FINISH_DISTANCE = 1000;
 
@@ -108,7 +108,7 @@ contract Monaco {
     int256 internal constant BANANA_PER_TURN_DECREASE = 0.33e18;
     int256 internal constant BANANA_SELL_PER_TURN = 0.2e18;
 
-    int256 internal constant SHIELD_TARGET_PRICE = 300e18;
+    int256 internal constant SHIELD_TARGET_PRICE = 150e18;
     int256 internal constant SHIELD_PER_TURN_DECREASE = 0.33e18;
     int256 internal constant SHIELD_SELL_PER_TURN = 0.2e18;
 
