@@ -5,7 +5,10 @@ line_length = 120
 bytecode_hash = "none"
 optimizer_runs = 1000000
 solc = "0.8.17"
-fs_permissions = [{ access = "read-write", path = "./logs/"}]
+fs_permissions = [
+    { access = "read-write", path = "./logs/"},
+    { access = "read", path = "./race/"},
+]
 libs = ["node_modules", "lib"]
 
 [profile.intense]
