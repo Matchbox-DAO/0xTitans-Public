@@ -375,14 +375,30 @@ contract Monaco {
             // Check for banana collisions
             uint256 len = bananas.length;
             for (uint i = 0; i < len; ++i) {
-                if (bananas[i] <= y) continue; // skip bananas that are behind us
-                if (bananas[i] > y + distanceFromClosestCar) break; // we hit the closest car first, we can exit
+                // skip bananas that are behind or on us
+                if (bananas[i] <= y) continue;
+
+                // Check if the closest car is closer than the closest banana
+                // If a banana is on top of the closest car, the banana is hit
+                if (
+                    (distanceFromClosestCar != type(uint256).max) &&
+                    bananas[i] > y + distanceFromClosestCar
+                ) {
+                    break;
+                }
+
                 // Remove the banana by swapping it with the last and decreasing the size
                 bananas[i] = bananas[len - 1];
                 bananas.pop();
 
+                // Sort the bananas
+                bananas = getBananasSortedByY();
+
                 // Banana was closer or at the same position as the closestCar
                 delete closestCar;
+
+                // Exit as we already collided with a banana
+                break;
             }
 
             // If there is a closest car, shell it.

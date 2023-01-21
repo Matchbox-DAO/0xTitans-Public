@@ -114,7 +114,7 @@ contract MonacoAbilitiesTest is Test {
             return;
         }
 
-        mockCar1.setAction(Monaco.ActionType.ACCELERATE, amount);
+        mockCar1.setAction(Monaco.ActionType.ACCELERATE, amount, 1);
 
         monaco.play(3);
 
@@ -136,7 +136,7 @@ contract MonacoAbilitiesTest is Test {
             })
         );
 
-        mockCar2.setAction(Monaco.ActionType.SHELL, 1);
+        mockCar2.setAction(Monaco.ActionType.SHELL, 1, 1);
 
         monaco.play(1);
 
@@ -165,7 +165,7 @@ contract MonacoAbilitiesTest is Test {
                 y: car2Start
             })
         );
-        mockCar2.setAction(Monaco.ActionType.SHIELD, 2);
+        mockCar2.setAction(Monaco.ActionType.SHIELD, 2, 1);
 
         uint32 car1Start = 0;
         uint32 car1Speed = 100;
@@ -179,7 +179,7 @@ contract MonacoAbilitiesTest is Test {
                 y: car1Start
             })
         );
-        mockCar1.setAction(Monaco.ActionType.SHELL, 1);
+        mockCar1.setAction(Monaco.ActionType.SHELL, 1, 1);
 
         // Simulate one move per car -> 3 turns
         monaco.play(3);
@@ -200,7 +200,7 @@ contract MonacoAbilitiesTest is Test {
         monaco.play(18);
 
         uint256 turns = 3;
-        mockCar2.setAction(Monaco.ActionType.SHIELD, turns);
+        mockCar2.setAction(Monaco.ActionType.SHIELD, turns, 1);
         for (uint256 i = 0; i < turns; ++i) {
             monaco.play(1);
             (, , , uint32 shield, ) = monaco.getCarData(mockCar2);
@@ -232,7 +232,7 @@ contract MonacoAbilitiesTest is Test {
         );
 
         // First car that acts should super shell both cars ahead
-        mockCar2.setAction(Monaco.ActionType.SUPER_SHELL, 1);
+        mockCar2.setAction(Monaco.ActionType.SUPER_SHELL, 1, 1);
 
         // Simulate the turn only for car2 -> first car to act
         monaco.play(1);
@@ -267,9 +267,9 @@ contract MonacoAbilitiesTest is Test {
             })
         );
 
-        mockCar3.setAction(Monaco.ActionType.SHIELD, 1);
-        mockCar2.setAction(Monaco.ActionType.SHIELD, 2);
-        mockCar1.setAction(Monaco.ActionType.SUPER_SHELL, 1);
+        mockCar3.setAction(Monaco.ActionType.SHIELD, 1, 1);
+        mockCar2.setAction(Monaco.ActionType.SHIELD, 2, 1);
+        mockCar1.setAction(Monaco.ActionType.SUPER_SHELL, 1, 1);
 
         // Simulate one move per car, shield -> shield -> super shell
         monaco.play(3);
@@ -293,7 +293,7 @@ contract MonacoAbilitiesTest is Test {
                 y: carPosition
             })
         );
-        mockCar2.setAction(Monaco.ActionType.BANANA, 1);
+        mockCar2.setAction(Monaco.ActionType.BANANA, 1, 1);
 
         // Check that we have no bananas
         vm.expectRevert();
@@ -304,6 +304,33 @@ contract MonacoAbilitiesTest is Test {
 
         // Banana should be at car position
         assertEq(monaco.bananas(0), carPosition);
+    }
+
+    function testAction_banana_delete() public {
+        monaco.setCarData(
+            mockCar2,
+            Monaco.CarData({
+                balance: 15000,
+                car: mockCar2,
+                speed: 0,
+                shield: 0,
+                y: 5
+            })
+        );
+        
+
+        monaco.addBanana(20);
+        monaco.addBanana(21);
+
+        mockCar2.setAction(Monaco.ActionType.SHELL, 1, 1);
+
+        // Simulate a few turns
+        monaco.play(3);
+
+        monaco.bananas(0);
+
+        vm.expectRevert();
+        monaco.bananas(1);
     }
 
     function testAction_banana_collision() public {
@@ -318,7 +345,7 @@ contract MonacoAbilitiesTest is Test {
                 y: bananaPos
             })
         );
-        mockCar2.setAction(Monaco.ActionType.BANANA, 1);
+        mockCar2.setAction(Monaco.ActionType.BANANA, 1, 1);
 
         uint32 car3Speed1 = 60;
         monaco.setCarData(
@@ -349,6 +376,73 @@ contract MonacoAbilitiesTest is Test {
         assertTrue(car3Speed1 > car3Speed2);
 
         // Banana should be deleted
+        vm.expectRevert();
+        monaco.bananas(0);
+    }
+
+    function testAction_shell_car_banana() public {
+        monaco.setCarData(
+            mockCar2,
+            Monaco.CarData({
+                balance: 15000,
+                car: mockCar2,
+                speed: 0,
+                shield: 0,
+                y: 5
+            })
+        );
+
+        monaco.setCarData(
+            mockCar1,
+            Monaco.CarData({
+                balance: 15000,
+                car: mockCar1,
+                speed: 5,
+                shield: 0,
+                y: 10
+            })
+        );
+        
+
+        monaco.addBanana(20);
+        monaco.addBanana(21);
+
+        mockCar2.setAction(Monaco.ActionType.SHELL, 1, 1);
+
+        // Simulate a few turns
+        monaco.play(3);
+
+        monaco.bananas(0);
+
+        monaco.bananas(1);
+    }
+
+    function testAction_car_shell_multiple_bananas() public {
+        monaco.setCarData(
+            mockCar2,
+            Monaco.CarData({
+                balance: 450000,
+                car: mockCar2,
+                speed: 0,
+                shield: 0,
+                y: 1
+            })
+        );
+
+        monaco.addBanana(20);
+        monaco.addBanana(21);
+        monaco.addBanana(22);
+
+        mockCar2.setAction(Monaco.ActionType.SHELL, 1, 2);
+
+        // Simulate a few turns
+        monaco.play(1);
+
+        assertEq(monaco.bananas(0),22);
+
+        mockCar2.setAction(Monaco.ActionType.SHELL, 1, 2);
+        monaco.play(3);
+
         vm.expectRevert();
         monaco.bananas(0);
     }
@@ -402,7 +496,7 @@ contract MonacoAbilitiesTest is Test {
         assertEq(car2Speed, 12);
     }
 
-    function testAction_shell_banana() public {
+    function testAction_shell_banana_on_car() public {
         uint32 car1Position = 100;
         monaco.addBanana(car1Position);
         monaco.setCarData(
@@ -427,7 +521,7 @@ contract MonacoAbilitiesTest is Test {
                 y: car2Position
             })
         );
-        mockCar2.setAction(Monaco.ActionType.SHELL, 1);
+        mockCar2.setAction(Monaco.ActionType.SHELL, 1, 1);
 
         monaco.play(1);
 
@@ -461,14 +555,14 @@ contract MonacoAbilitiesTest is Test {
             Monaco.CarData({
                 balance: 15000,
                 car: mockCar2,
-                speed: 100,
+                speed: 0,
                 shield: 0,
-                y: 0
+                y: 1
             })
         );
-        mockCar2.setAction(Monaco.ActionType.SUPER_SHELL, 1);
+        mockCar2.setAction(Monaco.ActionType.SUPER_SHELL, 1, 1);
 
-        // Place car1 in front of car2
+        // Place cars: car2 -> car1 -> car3
         monaco.setCarData(
             mockCar1,
             Monaco.CarData({
@@ -477,6 +571,17 @@ contract MonacoAbilitiesTest is Test {
                 speed: 100,
                 shield: 0,
                 y: 20
+            })
+        );
+
+        monaco.setCarData(
+            mockCar3,
+            Monaco.CarData({
+                balance: 15000,
+                car: mockCar3,
+                speed: 100,
+                shield: 0,
+                y: 30
             })
         );
 
@@ -491,9 +596,9 @@ contract MonacoAbilitiesTest is Test {
         assertEq(car1Speed, 1);
         assertEq(car1Pos, 20 + car1Speed);
 
-        // Car2 should be unaffected
-        (, uint32 car2Speed, uint32 car2Pos, , ) = monaco.getCarData(mockCar2);
-        assertEq(car2Speed, 100);
-        assertEq(car2Pos, car2Speed);
+        // Car3 is shelled
+        (, uint32 car3Speed, uint32 car3Pos, , ) = monaco.getCarData(mockCar3);
+        assertEq(car3Speed, 1);
+        assertEq(car3Pos, 30 + car3Speed);
     }
 }
