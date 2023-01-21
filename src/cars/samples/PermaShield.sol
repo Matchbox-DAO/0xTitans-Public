@@ -7,10 +7,10 @@ contract PermaShield is ICar {
     function takeYourTurn(
         Monaco monaco,
         Monaco.CarData[] calldata allCars,
-        uint256[] calldata, /*bananas*/
+        uint256[] calldata /*bananas*/,
         uint256 ourCarIndex
     ) external {
-        if (monaco.getShieldCost(1) < 500) { 
+        if (monaco.getShieldCost(1) < 500) {
             monaco.buyShield(1);
         }
         if (monaco.getAccelerateCost(1) < 800) {

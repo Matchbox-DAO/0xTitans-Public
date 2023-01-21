@@ -21,59 +21,103 @@ contract Sauce is ICar {
 
     uint256 internal constant ACCEL_FLOOR = 10;
 
-    function updateBalance(Monaco.CarData memory ourCar, uint256 cost) internal pure {
+    function updateBalance(
+        Monaco.CarData memory ourCar,
+        uint256 cost
+    ) internal pure {
         ourCar.balance -= uint24(cost);
     }
 
-    function hasEnoughBalance(Monaco.CarData memory ourCar, uint256 cost) internal pure returns (bool) {
+    function hasEnoughBalance(
+        Monaco.CarData memory ourCar,
+        uint256 cost
+    ) internal pure returns (bool) {
         return ourCar.balance > cost;
     }
 
-    function buyAsMuchAccelerationAsSensible(Monaco monaco, Monaco.CarData memory ourCar) internal {
+    function buyAsMuchAccelerationAsSensible(
+        Monaco monaco,
+        Monaco.CarData memory ourCar
+    ) internal {
         uint256 baseCost = 25;
-        uint256 speedBoost = ourCar.speed < 5 ? 5 : ourCar.speed < 10 ? 3 : ourCar.speed < 15 ? 2 : 1;
-        uint256 yBoost =
-            ourCar.y < 100 ? 1 : ourCar.y < 250 ? 2 : ourCar.y < 500 ? 3 : ourCar.y < 750 ? 4 : ourCar.y < 950 ? 5 : 10;
+        uint256 speedBoost = ourCar.speed < 5 ? 5 : ourCar.speed < 10
+            ? 3
+            : ourCar.speed < 15
+            ? 2
+            : 1;
+        uint256 yBoost = ourCar.y < 100 ? 1 : ourCar.y < 250
+            ? 2
+            : ourCar.y < 500
+            ? 3
+            : ourCar.y < 750
+            ? 4
+            : ourCar.y < 950
+            ? 5
+            : 10;
         uint256 costCurve = baseCost * speedBoost * yBoost;
         // uint costCurve = 25 * ((5 / (ourCar.speed + 1))+1) * ((ourCar.y + 1000) / 500);
         uint256 speedCurve = 8 * ((ourCar.y + 500) / 300);
 
         while (
-            hasEnoughBalance(ourCar, monaco.getAccelerateCost(1)) && monaco.getAccelerateCost(1) < costCurve
-                && ourCar.speed < speedCurve
+            hasEnoughBalance(ourCar, monaco.getAccelerateCost(1)) &&
+            monaco.getAccelerateCost(1) < costCurve &&
+            ourCar.speed < speedCurve
         ) updateBalance(ourCar, monaco.buyAcceleration(1));
     }
 
-    function buyAsMuchAccelerationAsPossible(Monaco monaco, Monaco.CarData memory ourCar) internal {
-        while (hasEnoughBalance(ourCar, monaco.getAccelerateCost(1))) updateBalance(ourCar, monaco.buyAcceleration(1));
+    function buyAsMuchAccelerationAsPossible(
+        Monaco monaco,
+        Monaco.CarData memory ourCar
+    ) internal {
+        while (hasEnoughBalance(ourCar, monaco.getAccelerateCost(1)))
+            updateBalance(ourCar, monaco.buyAcceleration(1));
     }
 
-    function buy1ShellIfPriceIsGood(Monaco monaco, Monaco.CarData memory ourCar) internal {
+    function buy1ShellIfPriceIsGood(
+        Monaco monaco,
+        Monaco.CarData memory ourCar
+    ) internal {
         // Buy a shell if the price is good but keep a small balance just in case we need to accelerate again
-        if (monaco.getShellCost(1) < 1500 && hasEnoughBalance(ourCar, monaco.getShellCost(1) + 500)) {
+        if (
+            monaco.getShellCost(1) < 1500 &&
+            hasEnoughBalance(ourCar, monaco.getShellCost(1) + 500)
+        ) {
             updateBalance(ourCar, monaco.buyShell(1));
         }
     }
 
-    function buy1ShellIfSensible(Monaco monaco, Monaco.CarData memory ourCar, uint256 speedOfNextCarAhead) internal {
+    function buy1ShellIfSensible(
+        Monaco monaco,
+        Monaco.CarData memory ourCar,
+        uint256 speedOfNextCarAhead
+    ) internal {
         if (speedOfNextCarAhead < 5) return;
 
         // Adjust tolerable price to the urgency of the situation
-        uint256 costCurve = 500 * ((ourCar.y + 1000) / 500) * ((speedOfNextCarAhead + 5) / 5);
+        uint256 costCurve = 500 *
+            ((ourCar.y + 1000) / 500) *
+            ((speedOfNextCarAhead + 5) / 5);
 
-        if (monaco.getShellCost(1) < costCurve && hasEnoughBalance(ourCar, monaco.getShellCost(1))) {
+        if (
+            monaco.getShellCost(1) < costCurve &&
+            hasEnoughBalance(ourCar, monaco.getShellCost(1))
+        ) {
             updateBalance(ourCar, monaco.buyShell(1));
         }
     }
 
-    function buy1ShellWhateverThePrice(Monaco monaco, Monaco.CarData memory ourCar) internal {
-        if (hasEnoughBalance(ourCar, monaco.getShellCost(1))) updateBalance(ourCar, monaco.buyShell(1));
+    function buy1ShellWhateverThePrice(
+        Monaco monaco,
+        Monaco.CarData memory ourCar
+    ) internal {
+        if (hasEnoughBalance(ourCar, monaco.getShellCost(1)))
+            updateBalance(ourCar, monaco.buyShell(1));
     }
 
     function takeYourTurn(
         Monaco monaco,
         Monaco.CarData[] calldata allCars,
-        uint256[] calldata, /*bananas*/
+        uint256[] calldata /*bananas*/,
         uint256 ourCarIndex
     ) external {
         Monaco.CarData memory ourCar = allCars[ourCarIndex];
@@ -90,9 +134,12 @@ contract Sauce is ICar {
         }
 
         // lead metrics -- data about the car in front. not valid if car is front
-        uint256 leadSpeedDelta =
-            ourCar.speed < leadCar.speed ? leadCar.speed - ourCar.speed : ourCar.speed - leadCar.speed;
-        uint256 leadDistance = ourCar.y < leadCar.y ? leadCar.y - ourCar.y : ourCar.y - leadCar.y;
+        uint256 leadSpeedDelta = ourCar.speed < leadCar.speed
+            ? leadCar.speed - ourCar.speed
+            : ourCar.speed - leadCar.speed;
+        uint256 leadDistance = ourCar.y < leadCar.y
+            ? leadCar.y - ourCar.y
+            : ourCar.y - leadCar.y;
 
         // lag metrics -- data about the car behind. not valid if car is last
         // uint256 lagSpeedDelta = ourCar.speed < lagCar.speed ? lagCar.speed - ourCar.speed : ourCar.speed - lagCar.speed;
@@ -143,7 +190,7 @@ contract Sauce is ICar {
 
         if (action.accelerate != 0) monaco.buyAcceleration(action.accelerate);
         if (action.shell != 0) {
-            if (ourCarIndex != 0) { 
+            if (ourCarIndex != 0) {
                 if (0 < leadCar.shield) {
                     action.shell++;
                 }
@@ -152,7 +199,7 @@ contract Sauce is ICar {
         }
         if (action.shield != 0) monaco.buyShield(action.shield);
         if (action.superShell != 0) {
-            if (ourCarIndex != 0) { 
+            if (ourCarIndex != 0) {
                 if (0 < leadCar.shield) {
                     action.superShell++;
                 }

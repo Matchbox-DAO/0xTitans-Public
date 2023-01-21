@@ -184,7 +184,7 @@ contract MonacoAbilitiesTest is Test {
         // Simulate one move per car -> 3 turns
         monaco.play(3);
 
-        (, uint32 speed1, uint32 y1, , ) = monaco.getCarData(mockCar1);
+        (, , uint32 y1, , ) = monaco.getCarData(mockCar1);
         (, uint32 speed2, uint32 y2, , ) = monaco.getCarData(mockCar2);
 
         // car 2 is shielded and ahead

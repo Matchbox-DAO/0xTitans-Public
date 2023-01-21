@@ -387,7 +387,10 @@ contract Monaco {
 
             // If there is a closest car, shell it.
             if (address(closestCar) != address(0)) {
-                if (getCarData[closestCar].shield == 0 && getCarData[closestCar].speed > POST_SHELL_SPEED) {
+                if (
+                    getCarData[closestCar].shield == 0 &&
+                    getCarData[closestCar].speed > POST_SHELL_SPEED
+                ) {
                     // Set the speed to POST_SHELL_SPEED unless its already at that speed or below, as to not speed it up.
                     getCarData[closestCar].speed = POST_SHELL_SPEED;
                     emit Shelled(

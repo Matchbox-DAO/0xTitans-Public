@@ -28,12 +28,24 @@ contract ExampleCar is ICar {
         ) {
             // If we're not in the lead (index 0) + the car ahead of us is going faster + we can afford a shell, smoke em.
             monaco.buyShell(1); // This will instantly set the car in front of us' speed to 1.
-        } else if (ourCar.shield == 0) {
+        } else if (ourCarIndex == 0) {
             // If we are in the lead, are not shielded and we can afford to shield ourselves, just do it.
-            if (ourCarIndex == 0 && ourCar.balance > monaco.getShieldCost(2)) {
-                monaco.buyShield(2);
+            uint256 bananaCost = monaco.getBananaCost();
+            uint256 shieldCost = monaco.getShieldCost(2);
+            bool useBanana = shieldCost > bananaCost;
+
+            if (ourCar.balance >= min(bananaCost, shieldCost)) {
+                if (useBanana) {
+                    monaco.buyBanana();
+                } else {
+                    monaco.buyShield(2);
+                }
             }
         }
+    }
+
+    function min(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a > b ? b : a;
     }
 
     function sayMyName() external pure returns (string memory) {

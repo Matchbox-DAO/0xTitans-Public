@@ -48,9 +48,9 @@ contract MonacoTest is Test {
     }
 
     function testGames() public {
-        ICar w1 = new PermaShield();
+        ICar w1 = new ExampleCar();
         ICar w2 = new Sauce();
-        ICar w3 = new Floor();
+        ICar w3 = new ExampleCar();
 
         monaco.register(w1);
         monaco.register(w2);
