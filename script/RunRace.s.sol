@@ -79,9 +79,9 @@ contract RunRace is Script {
         cars[2] = address(w3);
 
         // You can throw these CSV logs into Excel/Sheets/Numbers or a similar tool to visualize a race!
-        vm.writeFile(string.concat("logs/", vm.toString(address(w1)), ".csv"), "turns,balance,speed,y,shield\n");
-        vm.writeFile(string.concat("logs/", vm.toString(address(w2)), ".csv"), "turns,balance,speed,y,shield\n");
-        vm.writeFile(string.concat("logs/", vm.toString(address(w3)), ".csv"), "turns,balance,speed,y,shield\n");
+        vm.writeFile(string.concat("logs/", w1.sayMyName(), ".csv"), "turns,balance,speed,y,shield\n");
+        vm.writeFile(string.concat("logs/", w2.sayMyName(), ".csv"), "turns,balance,speed,y,shield\n");
+        vm.writeFile(string.concat("logs/", w3.sayMyName(), ".csv"), "turns,balance,speed,y,shield\n");
         vm.writeFile("logs/prices.csv", "turns,accelerateCost,shellCost,superShellCost,shieldCost\n");
         vm.writeFile("logs/sold.csv", "turns,acceleratesBought,shellsBought,superShellBought,shieldsBought\n");
 
@@ -362,11 +362,11 @@ contract RunRace is Script {
     function encodeCars() view private returns (string memory){
         return string.concat(
             '"cars":["',
-            vm.toString(cars[0]),
+            ICar(cars[0]).sayMyName(),
             '","',
-            vm.toString(cars[1]),
+            ICar(cars[1]).sayMyName(),
             '","',
-            vm.toString(cars[2]),
+            ICar(cars[2]).sayMyName(),
             '"]'
         );
     }
