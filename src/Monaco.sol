@@ -204,7 +204,7 @@ contract Monaco {
 
     function play(
         uint256 turnsToPlay
-    ) external onlyDuringActiveGame nonReentrant {
+    ) external onlyDuringActiveGame noCars nonReentrant {
         unchecked {
             // We'll play turnsToPlay turns, or until the game is done.
             for (; turnsToPlay != 0; turnsToPlay--) {
@@ -458,19 +458,6 @@ contract Monaco {
                     );
                 }
             }
-
-            // Check for banana collisions
-            uint256 len = bananas.length;
-            for (uint i = 0; i < len; ++i) {
-                // If the banana is behind or under us, skip it
-                if (bananas[i] <= y) continue;
-
-                // pop remaining bananas
-                while (i < len) {
-                    bananas.pop();
-                    ++i;
-                }
-            }
         }
     }
 
@@ -484,6 +471,11 @@ contract Monaco {
 
         // Get a storage pointer to the calling car's data struct.
         CarData storage car = getCarData[ICar(msg.sender)];
+
+        // If we try to buy bananas at the same position skip it
+        if (bananas.length > 0 && bananas[bananas.length - 1] == car.y) {
+            return 0;
+        }
 
         car.balance -= cost.safeCastTo32(); // This will underflow if we cant afford.
 
@@ -503,6 +495,7 @@ contract Monaco {
     function buyShield(
         uint256 amount
     ) external onlyDuringActiveGame onlyCurrentCar returns (uint256 cost) {
+        require(amount > 0, "ZERO_SHIELDS"); // Buying zero shields would make them free.
         cost = getShieldCost(amount); // Get the cost of shield.
 
         // Get a storage pointer to the calling car's data struct.
@@ -632,6 +625,15 @@ contract Monaco {
 
         _;
     }
+
+    modifier noCars() {
+        ICar current = ICar(msg.sender);
+        for(uint256 x = 0; x < cars.length; x++) {
+            require(current != cars[x], "CARS_NOT_ALLOWED");
+        }
+
+        _;
+    }    
 
     modifier nonReentrant() {
         // Check if the guard is set
