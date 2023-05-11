@@ -10,7 +10,7 @@ https://gist.github.com/gretzke/f7f3151693113cab9fe7e86b340477a9
 Created by the Polygon team 
  */
 
-import "./../interfaces/ICar.sol";
+import "./../../interfaces/ICar.sol";
 
 enum Status {
     EARLY_GAME,

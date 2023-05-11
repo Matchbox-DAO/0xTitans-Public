@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./../interfaces/ICar.sol";
+import "./../../interfaces/ICar.sol";
 
 /*
 Created by the Uniswap team 

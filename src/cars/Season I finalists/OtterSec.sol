@@ -8,7 +8,7 @@ Created by Robert Chen from OtterSec
 
  */
 
-import "./../interfaces/ICar.sol";
+import "./../../interfaces/ICar.sol";
 
 contract OtterSec is ICar {
     function takeYourTurn(
