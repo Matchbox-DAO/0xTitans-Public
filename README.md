@@ -50,4 +50,4 @@ In the platform, you won't submit the actual source code but only the bytecode o
 forge inspect <contract name> b
 ```
 
-By following these steps, you should be able to create and test your car strategy for the OxMonaco II project.
+By following these steps, you should be able to create and test your car strategy for the OxTitans project.
