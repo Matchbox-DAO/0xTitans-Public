@@ -2,6 +2,10 @@
 
 This repository contains the OxTitans(based on the original 0xMonaco) developed by Matchbox-DAO.
 
+For the platform please visit 
+
+https://0xtitans.com/games
+
 # Instructions
 
 ## Requirements
