@@ -9,7 +9,7 @@ https://0xtitans.com/games
 # Instructions
 
 ## Requirements
-To use this project, you need to have Foundry installed. You can find instructions on how to install it at https://book.getfoundry.sh/getting-started/installation.
+To use this project, you need to have Node (>=14) and Foundry installed. You can find instructions on how to install it at https://book.getfoundry.sh/getting-started/installation.
 
 ## Set Up 
 To set up the project, follow these steps:
@@ -24,6 +24,20 @@ To set up the project, follow these steps:
    forge install  
    ```
 
+3. Install node modules:
+   ```bash
+   yarn install  
+   ```
+
+4. Add a `logs` folder to the root of the project.
+
+5. Run tests:
+   ```bash
+   forge test
+   ```
+
+6. Make sure all tests passed
+
 ## How to test your strategies
 To test your strategies, follow these steps:
 
@@ -35,7 +49,7 @@ To test your strategies, follow these steps:
 
 4. Add strategies as `w1`, `w2`, and `w3`.
 
-5. Add a `logs` folder to the root of the project.
+5. Add a `logs` folder to the root of the project (if not done yet).
 
 6. Run the command `forge test` to execute the tests.
 

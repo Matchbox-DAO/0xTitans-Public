@@ -504,8 +504,13 @@ contract Monaco {
         car.balance -= cost.safeCastTo32(); // This will underflow if we cant afford.
 
         unchecked {
-            // Increase the shield by the bumped amount, the current turn should not be counted.
-            car.shield += 1 + uint32(amount);
+            uint256 currentShield = car.shield;
+
+            // Increase the shield by the bumped amount
+            car.shield += uint32(amount);
+
+            // we shouldn't decrease bought amount of shields
+            if (currentShield == 0) { car.shield++; }
 
             // Increase the number of shields sold.
             getActionsSold[ActionType.SHIELD] += amount;

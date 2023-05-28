@@ -753,4 +753,143 @@ contract MonacoAbilitiesTest is Test {
         (,,,uint32 shield_,) = monaco.getCarData(mockCar1);
         assertEq(shield_, 0);
     }
+
+
+    function testAction_buyOneShield() public {
+        uint32 car1Position = 10;
+        uint32 car2Position = 20;
+        uint32 car3Position = 30;
+
+        monaco.setCarData(
+            mockCar1,
+            Monaco.CarData({
+                balance: 15000,
+                car: mockCar1,
+                speed: 10,
+                shield: 0,
+                y: car1Position
+            })
+        );
+
+        monaco.setCarData(
+            mockCar2,
+            Monaco.CarData({
+                balance: 15000,
+                car: mockCar2,
+                speed: 10,
+                shield: 0,
+                y: car2Position
+            })
+        );
+
+        monaco.setCarData(
+            mockCar3,
+            Monaco.CarData({
+                balance: 15000,
+                car: mockCar3,
+                speed: 10,
+                shield: 0,
+                y: car3Position
+            })
+        );
+
+        mockCar1.setAction(Monaco.ActionType.SHIELD, 1, 1);
+
+        // Simulate a few turns
+        monaco.play(3);
+        (,,,uint32 shield1,) = monaco.getCarData(mockCar1);
+        assertEq(shield1, 1);
+    }    
+
+    function testAction_buyOneMoreShield() public {
+        uint32 car1Position = 10;
+        uint32 car2Position = 20;
+        uint32 car3Position = 30;
+
+        monaco.setCarData(
+            mockCar1,
+            Monaco.CarData({
+                balance: 15000,
+                car: mockCar1,
+                speed: 10,
+                shield: 1,
+                y: car1Position
+            })
+        );
+
+        monaco.setCarData(
+            mockCar2,
+            Monaco.CarData({
+                balance: 15000,
+                car: mockCar2,
+                speed: 10,
+                shield: 0,
+                y: car2Position
+            })
+        );
+
+        monaco.setCarData(
+            mockCar3,
+            Monaco.CarData({
+                balance: 15000,
+                car: mockCar3,
+                speed: 10,
+                shield: 0,
+                y: car3Position
+            })
+        );
+
+        mockCar1.setAction(Monaco.ActionType.SHIELD, 1, 1);
+
+        // Simulate a few turns
+        monaco.play(3);
+        (,,,uint32 shield1,) = monaco.getCarData(mockCar1);
+        assertEq(shield1, 1);
+    }        
+
+    function testAction_buyShieldTwice() public {
+        uint32 car1Position = 10;
+        uint32 car2Position = 20;
+        uint32 car3Position = 30;
+
+        monaco.setCarData(
+            mockCar1,
+            Monaco.CarData({
+                balance: 15000,
+                car: mockCar1,
+                speed: 10,
+                shield: 0,
+                y: car1Position
+            })
+        );
+
+        monaco.setCarData(
+            mockCar2,
+            Monaco.CarData({
+                balance: 15000,
+                car: mockCar2,
+                speed: 10,
+                shield: 0,
+                y: car2Position
+            })
+        );
+
+        monaco.setCarData(
+            mockCar3,
+            Monaco.CarData({
+                balance: 15000,
+                car: mockCar3,
+                speed: 10,
+                shield: 0,
+                y: car3Position
+            })
+        );
+
+        mockCar1.setAction(Monaco.ActionType.SHIELD, 2, 1);
+
+        // Simulate a few turns
+        monaco.play(3);
+        (,,,uint32 shield1,) = monaco.getCarData(mockCar1);
+        assertEq(shield1, 2);
+    }
 }
