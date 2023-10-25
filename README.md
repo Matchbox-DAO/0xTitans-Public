@@ -4,7 +4,7 @@ This repository contains the OxTitans(based on the original 0xMonaco) developed 
 
 For the platform please visit 
 
-https://0xtitans.com/games
+https://0xtitans.com
 
 # Instructions
 
